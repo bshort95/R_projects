@@ -1,0 +1,87 @@
+---
+title: "2.6"
+author: "Brandon Short"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:  
+    keep_md: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+# Use this R-Chunk to load all your libraries!
+#install.packages("tidyverse") # run this line once in console to get package
+library(tidyverse)
+library(bakeoff)
+```
+
+## importing datasets
+
+```{r}
+# Use this R-Chunk to import all your datasets!
+only_first_last <- ratings %>% 
+  group_by(series) %>% #changes the scope to look at the series instead of an index
+  slice(1, n()) %>%  #indexes the rows according to their index location.
+  mutate(which_episode = ifelse(episode == 1, "First", "Last")) %>% # changes the graph to show which episodes were the first and last 
+  ungroup() %>% #ungroups the grouping
+  mutate(series_f = as.factor(series)) # adding the mutated data to the graph
+
+(only_first_last)
+```
+
+## creating rating_10
+
+```{r}
+# Use this R-Chunk to clean & wrangle your data!
+rating_10 <- ratings %>%
+  group_by(series) %>%
+  filter(10 %in% episode) %>%
+  mutate(viewers_mean = mean(viewers_7day)) %>%
+  ungroup() 
+  
+(rating_10)
+
+
+```
+
+## Data vis on network and channel rankings
+
+```{r}
+ggplot(data = only_first_last, aes(y = channels_rank))+
+  geom_col(aes(x = series, fill = which_episode), width=.5, position = "dodge")
+
+ggplot(data = only_first_last, aes(y = network_rank))+
+  geom_col(aes(x = series, fill = which_episode), width=.5, position = "dodge")
+
+```
+
+## Observation for network and channel ranks
+
+in the network ratings it is pretty consistent, as the ranks are number 1 every year since series 5. When it comes the   the channels ranking it fluctuates a little more with the overall ranking being better for the first episode opposed   to the last episode. this makes me think that people are more excited to watch the start of the show. this makes   sense logically, as a competition show it is easier for those who have watched through the entire show to be excited   about the final episode. considering that not everyone who starts the show will finish it, there is more of an   audience for the first eppisode.
+
+## Data vis for people watching   
+
+```{r}
+grouped_rating<-(rating_10) %>%
+  group_by(series) %>%
+  slice(n())
+
+ggplot(data = rating_10)+
+  geom_point(aes(x = series, y = viewers_7day, color = episode))+
+  geom_point (data = grouped_rating,aes(x = series, y = viewers_mean), shape =10, size = 6)
+
+
+```
+  
+## Observation from people watching  
+  
+As with most shows, there was a ramp up on viewership from season to season, but in this case there was a dropoff of   views after season 7. what is also interesting is that the most viewed episode looks to be the first one. which goes   in line with my observations from the last graph. after doing some reaseach it looks like the fan favorites were      series 5-7, and this is in part to the dynamics of contestants. 

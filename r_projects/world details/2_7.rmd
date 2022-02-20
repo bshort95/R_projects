@@ -1,0 +1,60 @@
+---
+title: "2.7"
+author: "Brandon Short"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:  
+    keep_md: true
+    toc: true
+    toc_float: true
+    code_folding: hide
+    fig_height: 6
+    fig_width: 12
+    fig_align: 'center'
+---
+
+```{r, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r load_libraries, include=FALSE}
+# Use this R-Chunk to load all your libraries!
+#install.packages("tidyverse") # run this line once in console to get package
+library(gapminder)
+library(tidyverse)
+
+```
+
+```{r}
+
+gapminder1 <- gapminder %>% filter(country != "Kuwait")
+
+gapminder1$pop <- gapminder1$pop/100000
+options(scipen = 999)
+
+```
+
+
+
+```{r}
+
+
+gapav <- gapminder1%>%
+  group_by(continent, year)%>%
+  mutate(average = weighted.mean(gdpPercap, pop))%>%
+  ungroup()
+
+
+ggplot(data= gapminder1)+
+  geom_point( aes(x= year, y = gdpPercap, color = continent, size = pop))+
+  geom_line( aes(x= year, y= gdpPercap, group = country, color = continent ))+
+  geom_point(data = gapav,  aes(x= year, y = average, size = pop))+
+  geom_line( data = gapav, aes(x= year, y= average, group = country ))+
+  facet_grid(~ continent)+
+  scale_y_continuous(trans = "sqrt") +
+  theme_bw() +
+  labs(x = "year", y = "GDP per capita", size = "pop (100k)")
+
+
+ggsave(filename="2_7image.png", units = "in", width = 15)
+```
